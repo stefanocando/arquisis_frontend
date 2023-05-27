@@ -7,6 +7,14 @@ jobs:
     steps:
       - checkout
 
+      # Install AWS CLI
+      - run:
+          name: Install AWS CLI
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+
       # Install dependencies
       - run:
           name: Install Dependencies
@@ -14,36 +22,15 @@ jobs:
 
       # Build the project
       - run:
-          name: Build Project
+          name: Build
           command: npm run build
 
-  deploy:
-    docker:
-      - image: innovatorjapan/awscli:latest
-    steps:
+      # Deploy to S3
       - run:
           name: Deploy to S3
           command: |
-            export PATH=$PATH:/home/circleci/.local/bin
-
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set default.region $AWS_DEFAULT_REGION
 
             aws s3 sync dist s3://homemadeticketsellerbucket --delete
-
-workflows:
-  build_and_deploy:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - master 
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only:
-                - master 
