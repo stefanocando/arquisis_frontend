@@ -20,7 +20,7 @@ jobs:
       # Install pip
       - run:
           name: Install pip3
-          command: apt install python3-pip
+          command: sudo apt install python3-pip
 
       # Deploy to S3
       - run:
