@@ -20,7 +20,7 @@ export default {
 <template>
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="text-center">
-      <h1>TicketSeller</h1>
+      <h1>TicketSeller23</h1>
       <div v-if="!isAuthenticated">
         <LoginButton />
         <SignupButton />
