@@ -9,18 +9,18 @@ jobs:
 
       # Install dependencies
       - run:
-        name: Install Dependencies
-        command: npm install
+          name: Install Dependencies
+          command: npm install
 
       # Build the project
       - run:
-        name: Build Project
-        command: npm run build
+          name: Build Project
+          command: npm run build
 
       - run:
-        name: Deploy to S3
-        command: |
-          pip install awscli
+          name: Deploy to S3
+          command: |
+            pip install awscli
 
       # Deploy to S3
       - run:
