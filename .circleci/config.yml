@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/node:14.16
+      - image: circleci/node
 
     steps:
       - checkout
@@ -10,12 +10,12 @@ jobs:
       # Install dependencies
       - run:
           name: Install Dependencies
-          command: yarn install
+          command: npm install
 
       # Build the project
       - run:
           name: Build Project
-          command: yarn build
+          command: npm run build
 
       - run:
           name: Deploy to S3
