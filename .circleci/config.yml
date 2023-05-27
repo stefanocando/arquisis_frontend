@@ -22,11 +22,13 @@ jobs:
           name: Install pip3
           command: sudo apt install python3-pip
 
-      # Deploy to S3
+  deploy:
+    docker:
+      - image: innovatorjapan/awscli:latest
+    steps:
       - run:
           name: Deploy to S3
           command: |
-            pip3 install awscli --upgrade --user
             export PATH=$PATH:/home/circleci/.local/bin
 
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
@@ -34,3 +36,19 @@ jobs:
             aws configure set default.region $AWS_DEFAULT_REGION
 
             aws s3 sync dist s3://homemadeticketsellerbucket --delete
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            only:
+              - master
+
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
