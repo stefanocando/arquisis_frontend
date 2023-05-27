@@ -23,6 +23,10 @@ jobs:
             pip install awscli
 
       # Deploy to S3
+  deploy:
+    docker:
+      - image: innovatorjapan/awscli:latest
+    steps:
       - run:
           name: Deploy to S3
           command: |
