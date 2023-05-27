@@ -17,11 +17,6 @@ jobs:
           name: Build Project
           command: npm run build
 
-      # Install pip
-      - run:
-          name: Install pip3
-          command: sudo apt install python3-pip
-
   deploy:
     docker:
       - image: innovatorjapan/awscli:latest
