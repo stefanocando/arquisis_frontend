@@ -36,6 +36,6 @@ jobs:
             aws s3 sync dist s3://homemadeticketsellerbucket --delete
       
       # Invalidate Cloudfront Cache
-      -run:
+      - run:
           name: Invalidate Cloudfront Cache
           command: aws cloudfront create-invalidation --distribution-id "E1ZIKN8PYN13UK" --paths "/*"
