@@ -17,15 +17,16 @@ jobs:
           name: Build Project
           command: npm run build
 
-  # Deploy to S3
-  deploy:
-    docker:
-      - image: innovatorjapan/awscli:latest
-    steps:
+      # Install pip
+      - run:
+          name: Install pip3
+          command: apt install python3-pip
+
+      # Deploy to S3
       - run:
           name: Deploy to S3
           command: |
-            pip install awscli --upgrade --user
+            pip3 install awscli --upgrade --user
             export PATH=$PATH:/home/circleci/.local/bin
 
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
