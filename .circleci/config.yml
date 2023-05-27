@@ -34,5 +34,8 @@ jobs:
             aws configure set default.region $AWS_DEFAULT_REGION
 
             aws s3 sync dist s3://homemadeticketsellerbucket --delete
-
-            aws cloudfront create-invalidation --distribution-id E1ZIKN8PYN13UK --paths "/*"
+      
+      # Invalidate Cloudfront Cache
+      -run:
+          name: Invalidate Cloudfront Cache
+          command: aws cloudfront create-invalidation --distribution-id "E1ZIKN8PYN13UK" --paths "/*"
