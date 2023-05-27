@@ -10,12 +10,12 @@ jobs:
       # Install dependencies
       - run:
           name: Install Dependencies
-          command: npm install
+          command: yarn install
 
       # Build the project
       - run:
           name: Build Project
-          command: npm run build
+          command: yarn build
 
       - run:
           name: Deploy to S3
