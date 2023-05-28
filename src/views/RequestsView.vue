@@ -17,11 +17,14 @@ export default {
     const token = await this.$auth0.getAccessTokenSilently()
     const userId = this.user.sub.split('|')[1]
     try {
-      const response = await fetch(`https://stefanocando.me/request/user/${userId}`, {
-        method: 'GET',
+      const response = await fetch(`https://api.stefanocando.me/request/user`, {
+        method: 'POST',
         mode: 'cors',
         headers: {
           Authorization: `Bearer ${token}`
+        },
+        body: {
+          "user_id": userId
         }
       })
       this.data = (await response.json()).request
