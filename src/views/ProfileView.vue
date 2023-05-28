@@ -12,14 +12,14 @@ export default {
       user: this.$auth0.user,
       data: '',
       loadingEvents: true,
-      currentPage: 1
+      currentPage: 0
     }
   },
   methods: {
     fetchEvents(action) {
       this.loadingEvents = true
       action === 'prev' ? this.currentPage-- : this.currentPage++
-      fetch(`https://stefanocando.me/events?page=${this.currentPage}`)
+      fetch(`https://api.stefanocando.me/?page=${this.currentPage}`)
         .then((response) => response.json())
         .then((data) => {
           this.data = data.events
@@ -35,7 +35,7 @@ export default {
     }
   },
   mounted() {
-    fetch('https://stefanocando.me/events?page=0')
+    fetch('https://api.stefanocando.me/?page=0')
       .then((response) => response.json())
       .then((data) => {
         this.data = data.events
@@ -116,7 +116,7 @@ export default {
           </table>
           <nav aria-label="Page navigation">
             <ul class="pagination">
-              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <li class="page-item" :class="{ disabled: currentPage === 0 }">
                 <a class="page-link" href="#" @click.prevent="fetchEvents('prev')">Previo</a>
               </li>
               <li class="page-item">

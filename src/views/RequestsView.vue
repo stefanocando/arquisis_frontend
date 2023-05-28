@@ -17,15 +17,16 @@ export default {
     const token = await this.$auth0.getAccessTokenSilently()
     const userId = this.user.sub.split('|')[1]
     try {
-      const response = await fetch(`https://api.stefanocando.me/request/user`, {
+      const response = await fetch(`https://api.stefanocando.me/request`, {
         method: 'POST',
-        mode: 'no-cors',
+        mode: 'cors',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: {
-          "user_id": userId
-        }
+        body: 
+          JSON.stringify({"user_id": userId})
+        
       })
       this.data = (await response.json()).request
       this.loadingRequests = false
@@ -38,7 +39,7 @@ export default {
       let state
       if (request.state === null) {
         state = {
-          color: 'info',
+          color: 'warning',
           string: 'Pendiente'
         }
       } else if (request.state === 1) {
@@ -48,7 +49,7 @@ export default {
         }
       } else if (request.state === 0) {
         state = {
-          color: 'warning',
+          color: 'danger',
           string: 'Rechazado'
         }
       }
