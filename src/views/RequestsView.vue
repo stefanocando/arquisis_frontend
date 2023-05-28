@@ -19,7 +19,7 @@ export default {
     try {
       const response = await fetch(`https://api.stefanocando.me/request/user`, {
         method: 'POST',
-        mode: 'cors',
+        mode: 'no-cors',
         headers: {
           Authorization: `Bearer ${token}`
         },
