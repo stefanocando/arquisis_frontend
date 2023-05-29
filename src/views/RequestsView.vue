@@ -10,7 +10,8 @@ export default {
       data: [],
       loadingRequests: true,
       user: this.$auth0.user,
-      currentPage: 1
+      currentPage: 1,
+      currentPDFLink: ""
     }
   },
   async mounted() {
@@ -24,9 +25,9 @@ export default {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: 
+        body:
           JSON.stringify({"user_id": userId})
-        
+
       })
       this.data = (await response.json()).request
       this.loadingRequests = false
@@ -35,6 +36,24 @@ export default {
     }
   },
   methods: {
+    async sendDownloadPDF(requestId){
+      const userId = this.user.sub.split("|")[1]
+      try {
+        const response = await fetch(`https://api.stefanocando.me/getTicket`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body:
+            JSON.stringify({"ticket_id": requestId , "user_id": userId
+            })
+        })
+      } catch(error) {
+        console.log(error)
+      }
+    },
     state(request) {
       let state
       if (request.state === null) {
@@ -73,13 +92,17 @@ export default {
           />
           <h3>{{ user.nickname }}</h3>
           <p class="lead">{{ user.email }}</p>
-          <RouterLink class="btn btn-link" to="/profile">Volver a ver eventos</RouterLink>
+          <RouterLink class="btn btn-link" to="/profile"
+            >Volver a ver eventos</RouterLink
+          >
         </div>
       </div>
 
       <!-- Events table section -->
       <div v-if="loadingRequests">
-        <div class="d-flex flex-column justify-content-center align-items-center vh-100">
+        <div
+          class="d-flex flex-column justify-content-center align-items-center vh-100"
+        >
           <div class="text-center spinner-border" role="status">
             <span class="visually-hidden">Cargando...</span>
           </div>
@@ -102,9 +125,16 @@ export default {
                 <td>{{ request.event_id }}</td>
                 <td>{{ request.request_id }}</td>
                 <td>
-                  <button :class="'btn btn-' + state(request).color">
+                  <button :class="'text-white bg-' + state(request).color">
                     {{ state(request).string }}</button
                   >{{}}
+                  <button
+                    class="link-opacity-100"
+                    v-if="state(request).string === 'Aceptado'"
+                    @click="sendDownloadPDF(request.event_id)"
+                  >
+                    Descargar documento de la entrada
+                  </button>
                 </td>
               </tr>
             </tbody>

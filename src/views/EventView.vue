@@ -1,8 +1,8 @@
 <script>
-import { RouterLink } from 'vue-router'
+import { RouterLink } from "vue-router";
 export default {
   components: {
-    RouterLink
+    RouterLink,
   },
   props: {
     event_id: { type: String, required: true },
@@ -14,7 +14,7 @@ export default {
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
     createdAt: { type: String, required: true },
-    updatedAt: { type: String, required: true }
+    updatedAt: { type: String, required: true },
   },
   data() {
     return {
@@ -22,47 +22,79 @@ export default {
       ticketsQuantity: 1,
       requestSend: false,
       user: this.$auth0.user,
-      errorMessage: ''
-    }
+      errorMessage: "",
+    };
+  },
+  computed: {
+    totalPrice() {
+      return this.ticketsQuantity * this.price;
+    },
   },
   methods: {
+    validateTotalPrice() {
+      if (this.totalPrice > this.user.money) {
+        this.errorMessage = "El precio total sobrepasa el dinero que tienes";
+        return false;
+      }
+      return true;
+    },
+    async fetchUserData() {
+      const token = await this.$auth0.getAccessTokenSilently();
+      const userId = this.user.sub.split("|")[1];
+      fetch(`https://api.stefanocando.me/user/${userId}`, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          this.user.money = data.user.money;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     increaseTickets() {
-      this.ticketsQuantity++
+      this.ticketsQuantity++;
     },
     decreaseTickets() {
       if (this.ticketsQuantity > 1) {
-        this.ticketsQuantity--
+        this.ticketsQuantity--;
       }
     },
     async sendBuyingRequest() {
-      if (this.buyingTickets) {
-        const token = await this.$auth0.getAccessTokenSilently()
-        const userId = this.user.sub.split('|')[1]
+      if (this.buyingTickets && this.validateTotalPrice()) {
+        const token = await this.$auth0.getAccessTokenSilently();
+        const userId = this.user.sub.split("|")[1];
         try {
-          await fetch('https://stefanocando.me/request/new', {
-            method: 'POST',
+          await fetch("https://stefanocando.me/request/new", {
+            method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               user_id: userId,
               event_id: this.event_id,
-              deposit_token: '',
+              deposit_token: "",
               quantity: this.ticketsQuantity,
-              seller: 0
-            })
-          })
-          this.requestSend = true
+              seller: 0,
+            }),
+          });
+          this.requestSend = true;
         } catch (error) {
-          this.errorMessage = error
+          this.errorMessage = error;
         }
       } else {
-        this.buyingTickets = true
+        this.buyingTickets = true;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 <template>
   <div class="d-flex justify-content-center align-items-center vh-100">
@@ -78,7 +110,7 @@ export default {
               </tr>
               <tr>
                 <td class="fw-bold text-center">Fecha</td>
-                <td class="text-center">{{ date.split('T')[0] }}</td>
+                <td class="text-center">{{ date.split("T")[0] }}</td>
               </tr>
               <tr>
                 <td class="fw-bold text-center">Precio</td>
@@ -95,6 +127,7 @@ export default {
             </tbody>
           </table>
         </div>
+        <h3 class="text-center">Dinero: {{ user.money }}</h3>
         <div v-if="buyingTickets" class="text-center">
           <div class="align-items-center justify-content-center d-flex">
             <button class="btn btn-danger" @click="decreaseTickets">-</button>
@@ -107,9 +140,16 @@ export default {
             <button class="btn btn-success" @click="increaseTickets">+</button>
           </div>
         </div>
+        <div v-if="buyingTickets" class="text-center">
+          <p>Total = {{ totalPrice }}</p>
+        </div>
         <div class="text-center">
-          <button class="btn btn-primary mx-3" @click="sendBuyingRequest">Comprar entrada</button>
-          <RouterLink class="btn btn-link mx-3" to="/profile">Volver</RouterLink>
+          <button class="btn btn-primary mx-3" @click="sendBuyingRequest">
+            Comprar entrada
+          </button>
+          <RouterLink class="btn btn-link mx-3" to="/profile"
+            >Volver</RouterLink
+          >
         </div>
         <div v-if="requestSend" class="text-center my-3">
           Se ha enviado una solicitud para comprar entradas {{ errorMessage }}
