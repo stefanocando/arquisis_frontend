@@ -1,6 +1,7 @@
 <script>
 import LogoutButton from "@/components/buttons/LogoutButton.vue";
 import { RouterLink } from "vue-router";
+import { reactive } from "vue";
 
 export default {
   components: {
@@ -10,6 +11,7 @@ export default {
   data() {
     return {
       user: this.$auth0.user,
+      money: 0,
       data: "",
       loadingEvents: true,
       currentPage: 0,
@@ -21,22 +23,22 @@ export default {
     async fetchUserData() {
       const token = await this.$auth0.getAccessTokenSilently();
       const userId = this.user.sub.split("|")[1];
-      fetch(`https://api.stefanocando.me/user`, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          this.user.money = data.user.money;
+      try {
+        const response = await fetch(`https://api.stefanocando.me/user`, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id: userId }),
         })
-        .catch((error) => {
-          console.log(error);
-        });
+        
+        const data = await (response.json())
+        this.money = data.money
+      } catch (error) {
+        console.log(error)
+      }
     },
     fetchInitEvents() {
       fetch(`https://api.stefanocando.me/?page=0`)
@@ -64,7 +66,6 @@ export default {
     },
     async addMoney() {
       const token = await this.$auth0.getAccessTokenSilently();
-      console.log(token);
       const userId = this.user.sub.split("|")[1];
       if (this.moneyToAdd > 0) {
         const quantity = this.moneyToAdd;
@@ -118,23 +119,12 @@ export default {
       <!-- User info section -->
       <div class="row mb-5">
         <div class="col-md-6 mx-auto text-center">
-          <img
-            :src="user.picture"
-            alt="User profile picture"
-            height="50"
-            width="50"
-            class="rounded"
-          />
+          <img :src="user.picture" alt="User profile picture" height="50" width="50" class="rounded" />
           <h3>{{ user.nickname }}</h3>
           <p class="lead">{{ user.email }}</p>
           <div>
-            <h4>Dinero: {{ user.money }}</h4>
-            <input
-              type="number"
-              v-model="moneyToAdd"
-              class="mx-3 my-3 w-10 text-center"
-              min="0"
-            />
+            <h4>Dinero: {{ money }}</h4>
+            <input type="number" v-model="moneyToAdd" class="mx-3 my-3 w-10 text-center" min="0" />
             <button class="btn btn-primary mx-3" @click="addMoney">
               Agregar dinero
             </button>
@@ -143,17 +133,13 @@ export default {
             {{ moneyMessage }}
           </p>
           <LogoutButton />
-          <RouterLink class="btn btn-link" to="/requests"
-            >Ir a tus solicitudes de compra</RouterLink
-          >
+          <RouterLink class="btn btn-link" to="/requests">Ir a tus solicitudes de compra</RouterLink>
         </div>
       </div>
 
       <!-- Events table section -->
       <div v-if="loadingEvents">
-        <div
-          class="d-flex flex-column justify-content-center align-items-center vh-100"
-        >
+        <div class="d-flex flex-column justify-content-center align-items-center vh-100">
           <div class="text-center spinner-border" role="status">
             <span class="visually-hidden">Cargando...</span>
           </div>
@@ -177,17 +163,14 @@ export default {
                 <td>
                   {{
                     event.name.length > 60
-                      ? event.name.substring(0, 60) + "..."
-                      : event.name
+                    ? event.name.substring(0, 60) + "..."
+                    : event.name
                   }}
                 </td>
                 <td>{{ event.date.split("T")[0] }}</td>
                 <td>
-                  <RouterLink
-                    class="btn btn-outline-primary"
-                    :to="'/event?' + eventToQueryString(event)"
-                    >Más información</RouterLink
-                  >
+                  <RouterLink class="btn btn-outline-primary" :to="'/event?' + eventToQueryString(event)">Más información
+                  </RouterLink>
                 </td>
               </tr>
             </tbody>
@@ -195,20 +178,10 @@ export default {
           <nav aria-label="Page navigation">
             <ul class="pagination">
               <li class="page-item" :class="{ disabled: currentPage === 0 }">
-                <a
-                  class="page-link"
-                  href="#"
-                  @click.prevent="fetchEvents('prev')"
-                  >Previo</a
-                >
+                <a class="page-link" href="#" @click.prevent="fetchEvents('prev')">Previo</a>
               </li>
               <li class="page-item">
-                <a
-                  class="page-link"
-                  href="#"
-                  @click.prevent="fetchEvents('next')"
-                  >Siguiente</a
-                >
+                <a class="page-link" href="#" @click.prevent="fetchEvents('next')">Siguiente</a>
               </li>
             </ul>
           </nav>

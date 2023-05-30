@@ -18,6 +18,7 @@ export default {
   },
   data() {
     return {
+      money: 0,
       buyingTickets: false,
       ticketsQuantity: 1,
       requestSend: false,
@@ -32,7 +33,7 @@ export default {
   },
   methods: {
     validateTotalPrice() {
-      if (this.totalPrice > this.user.money) {
+      if (this.totalPrice > this.money) {
         this.errorMessage = "El precio total sobrepasa el dinero que tienes";
         return false;
       }
@@ -41,22 +42,22 @@ export default {
     async fetchUserData() {
       const token = await this.$auth0.getAccessTokenSilently();
       const userId = this.user.sub.split("|")[1];
-      fetch(`https://api.stefanocando.me/user/${userId}`, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          this.user.money = data.user.money;
+      try {
+        const response = await fetch(`https://api.stefanocando.me/user`, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id: userId }),
         })
-        .catch((error) => {
-          console.log(error);
-        });
+        
+        const data = await (response.json())
+        this.money = data.money
+      } catch (error) {
+        console.log(error)
+      }
     },
     increaseTickets() {
       this.ticketsQuantity++;
@@ -94,6 +95,9 @@ export default {
       }
     },
   },
+  mounted() {
+    this.fetchUserData()
+  }
 };
 </script>
 <template>
@@ -127,7 +131,7 @@ export default {
             </tbody>
           </table>
         </div>
-        <h3 class="text-center">Dinero: {{ user.money }}</h3>
+        <h3 class="text-center">Dinero: {{ money }}</h3>
         <div v-if="buyingTickets" class="text-center">
           <div class="align-items-center justify-content-center d-flex">
             <button class="btn btn-danger" @click="decreaseTickets">-</button>
@@ -152,7 +156,10 @@ export default {
           >
         </div>
         <div v-if="requestSend" class="text-center my-3">
-          Se ha enviado una solicitud para comprar entradas {{ errorMessage }}
+          Se ha enviado una solicitud para comprar entradas. El dinero se va a descontar un vez se valide tu compra.
+        </div>
+        <div v-if="errorMessage" class="text-center my-3">
+          {{ errorMessage }}
         </div>
       </div>
     </div>
